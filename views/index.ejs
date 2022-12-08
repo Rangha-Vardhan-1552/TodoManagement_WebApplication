@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <title>First page</title>
+    <link href="./css/style.css" rel="stylesheet">
+    </head>
+    <body>
+       <%- include('header.ejs') %>
+       <table>
+       <% for(var i=0;i< alltodos.length;i++){ %>
+           <tr>
+               <td>
+                   <%= alltodos[i].title %>
+                </td>
+           </tr>
+           <% } %>
+        </table>
+    </body>
+</html>
