@@ -1,74 +1,90 @@
-const { request, response } = require("express")
-const express=require("express")
-const app=express()
-const { Todo }=require("./models")
-const bodyParser=require("body-parser")
-const todo = require("./models/todo")
-const path =require("path")
+const express = require("express");
+const app = express();
+const { Todo } = require("./models");
+const bodyParser = require("body-parser");
+const { response } = require("express");
+app.use(bodyParser.json());
+const path = require("path");
 
+app.set("view engine", "ejs");
 
-
-app.use(bodyParser.json())
-app.set("view engine","ejs")
-app.get("/",async(request,response)=>{
-    const alltodos=await Todo.getTodos();
-    if(request.accepts("html")){
-        response.render('index',{
-            alltodos
-        })
-        
-    }else{
-        response.json({
-            alltodos
-        })
-    }
-    
+app.get("/", async (request, response) => {
+  const allTodos = await Todo.getTodos();
+  if (request.accepts("html")) {
+    response.render("index", {
+      allTodos,
+    });
+  } else {
+    response.json({
+      allTodos,
+    });
+  }
 });
 
- 
-//app.use(express.static(path.join(__dirname,'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
+/* Sequelize-cli(Without UI) endpoints/route using express.js: */
+// app.get("/", function (request, response) {
+//   response.send("Hello World");
+// });
 
-app.get("/todos",(request,response)=>{
-    //response.send("Hello World....!")
-    console.log("Todo List")
-})
+app.get("/todos", async function (_request, response) {
+  console.log("Processing list of all Todos ...");
+  try {
+    const todosList = await Todo.findAll();
+    return response.send(todosList);
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
 
+app.get("/todos/:id", async function (request, response) {
+  try {
+    const todo = await Todo.findByPk(request.params.id);
+    return response.json(todo);
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
 
+app.post("/todos", async function (request, response) {
+  try {
+    const todo = await Todo.addTodo(request.body);
+    return response.json(todo);
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
 
-app.post("/todos", async(request,response)=>{
-    console.log("creating a todo",request.body)
-    //Todo
-    try{
-        const todo= await Todo.addTodo({title:request.body.title,dueDate:request.body.dueDate,completed:false})
-        return response.json(todo)
+app.put("/todos/:id/markAsCompleted", async function (request, response) {
+  const todo = await Todo.findByPk(request.params.id);
+  try {
+    const updatedTodo = await todo.markAsCompleted();
+    return response.json(updatedTodo);
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
+
+app.delete("/todos/:id", async function (request, response) {
+  console.log("We have to delete a Todo with ID: ", request.params.id);
+  const todo = await Todo.findByPk(request.params.id);
+  try {
+    if (todo === null) return response.send(false);
+    else {
+      const deletedTodosCount = await todo.destroy({
+        where: { id: request.params.id },
+      });
+      return response.json(true);
     }
-    catch(error){
-        console.log(error)
-        return response.status(422).json(error)
-    }
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
 
-})
-
-
-
-app.put("/todos/:id/markAsCompleted",async (request,response)=>{
-    console.log("we have update a todo with ID:",request.params.id)
-    const todo=await Todo.findByPk(request.params.id)
-    try{
-        const updatetodo=await todo.markedAsCompleted()
-        return response.json(updatetodo)
-    }
-    catch(error){
-        console.log(error)
-        return response.status(422).json(error)
-    }
-})
-
-app.delete("/todos/:id",(request,response)=>{
-    console.log("delete a todo with ID:",request.params.id)
-})
-//app.listen(4000,()=>{
-//    console.log("express server started at port 4000")
-//})
-module.exports=app;
+module.exports = app;
