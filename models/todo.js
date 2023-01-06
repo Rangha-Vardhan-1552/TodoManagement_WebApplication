@@ -1,5 +1,8 @@
 "use strict";
-const { Model, Op } = require("sequelize");
+const { Model } = require("sequelize");
+const Sequelize = require("sequelize");
+const Op = Sequelize.Op;
+
 module.exports = (sequelize, DataTypes) => {
   class Todo extends Model {
     /**
@@ -11,71 +14,51 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
 
-    static getTodos() {
-      return this.findAll();
-    }
-
-    static getOverdueTodos() {
-      const formattedDate = (d) => {
-        return d.toISOString().split("T")[0];
-      };
-
-      const dateToday = new Date();
-      const today = formattedDate(dateToday);
-
-      return this.findAll({
-        where: {
-          dueDate: {
-            [Op.lt]: today,
-          },
-        },
-      });
-    }
-
-    static getDueTodayTodos() {
-      const formattedDate = (d) => {
-        return d.toISOString().split("T")[0];
-      };
-
-      const dateToday = new Date();
-      const today = formattedDate(dateToday);
-
-      return this.findAll({
-        where: {
-          dueDate: {
-            [Op.eq]: today,
-          },
-        },
-      });
-    }
-
-    static getDueLaterTodos() {
-      const formattedDate = (d) => {
-        return d.toISOString().split("T")[0];
-      };
-
-      const dateToday = new Date();
-      const today = formattedDate(dateToday);
-
-      return this.findAll({
-        where: {
-          dueDate: {
-            [Op.gt]: today,
-          },
-        },
-      });
-    }
-
-    static getTodosCount() {
-      return this.count();
-    }
-
     static addTodo({ title, dueDate }) {
       return this.create({ title: title, dueDate: dueDate, completed: false });
     }
 
+    static async remove(id) {
+      return this.destroy({ where: { id } });
+    }
+
+    static async getDueToday() {
+      const d = new Date().toLocaleDateString("en-CA");
+      const today = await this.findAll({
+        where: { dueDate: { [Op.eq]: d }, completed: false },
+      });
+      return today;
+    }
+
+    static async getDueLater() {
+      const d = new Date().toLocaleDateString("en-CA");
+      const later = await this.findAll({
+        where: { dueDate: { [Op.gt]: d }, completed: false },
+      });
+      return later;
+    }
+
+    static async getOverDue() {
+      const d = new Date().toLocaleDateString("en-CA");
+      const overdue = await this.findAll({
+        where: { dueDate: { [Op.lt]: d }, completed: false },
+      });
+      return overdue;
+    }
+
+    static async getCompleted() {
+      const complete = await this.findAll({
+        where: { completed: true },
+      });
+      return complete;
+    }
+
     markAsCompleted() {
       return this.update({ completed: true });
+    }
+
+    setCompletionStatus(status) {
+      return this.update({ completed: status });
     }
   }
   Todo.init(
