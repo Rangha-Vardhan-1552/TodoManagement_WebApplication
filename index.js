@@ -6,6 +6,6 @@ app.set("view engine", "ejs");
 
 app.use(express.static(path.join(__dirname, "public")));
 
-app.listen(process.env.PORT || 4000, () => {
-  console.log("Started express server at port 4000");
+app.listen(process.env.PORT || 5000, () => {
+  console.log("Started express server at port 5000");
 });

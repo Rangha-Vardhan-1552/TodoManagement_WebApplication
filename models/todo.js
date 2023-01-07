@@ -11,44 +11,60 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
+      Todo.belongsTo(models.User, {
+        foreignKey: "userID",
+      });
       // define association here
     }
 
-    static addTodo({ title, dueDate }) {
-      return this.create({ title: title, dueDate: dueDate, completed: false });
+    static addTodo({ title, dueDate, userId }) {
+      return this.create({
+        title: title,
+        dueDate: dueDate,
+        completed: false,
+        userID: userId,
+      });
     }
 
-    static async remove(id) {
-      return this.destroy({ where: { id } });
+    static async remove(id, userId) {
+      return this.destroy({ where: { id: id, userID: userId } });
     }
 
-    static async getDueToday() {
+    static async update({ title, dueDate, completed }) {
+      return this.update({
+        title: title,
+        dueDate: dueDate,
+        completed: completed,
+      });
+    }
+
+    static async getDueToday(userID) {
       const d = new Date().toLocaleDateString("en-CA");
       const today = await this.findAll({
-        where: { dueDate: { [Op.eq]: d }, completed: false },
+        where: { dueDate: { [Op.eq]: d }, completed: false, userID: userID },
       });
       return today;
     }
 
-    static async getDueLater() {
+    static async getDueLater(userID) {
       const d = new Date().toLocaleDateString("en-CA");
       const later = await this.findAll({
-        where: { dueDate: { [Op.gt]: d }, completed: false },
+        where: { dueDate: { [Op.gt]: d }, completed: false, userID: userID },
       });
       return later;
     }
 
-    static async getOverDue() {
+    static async getOverDue(userID) {
       const d = new Date().toLocaleDateString("en-CA");
       const overdue = await this.findAll({
-        where: { dueDate: { [Op.lt]: d }, completed: false },
+        where: { dueDate: { [Op.lt]: d }, completed: false, userID: userID },
       });
       return overdue;
     }
 
-    static async getCompleted() {
+    static async getCompleted(userID) {
       const complete = await this.findAll({
-        where: { completed: true },
+        where: { completed: true, userID: userID },
       });
       return complete;
     }
@@ -63,7 +79,13 @@ module.exports = (sequelize, DataTypes) => {
   }
   Todo.init(
     {
-      title: DataTypes.STRING,
+      title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notNull: true,
+        },
+      },
       dueDate: DataTypes.DATEONLY,
       completed: DataTypes.BOOLEAN,
     },
