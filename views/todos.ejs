@@ -11,15 +11,14 @@
       var token = document
         .querySelector('meta[name="csrf-token"]')
         .getAttribute("content");
-
       function updateTodo(id, currentStatus) {
         fetch(`/todos/${id}`, {
           method: "put",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            completed: !currentStatus,
-            "_csrf": token,
-          }),
+            completed: currentStatus,
+            _csrf: token,
+          })
         })
           .then((res) => {
             if (res.ok) {
@@ -31,10 +30,10 @@
 
       function deleteTodo(id) {
         fetch(`/todos/${id}`, {
-          method: "DELETE",
+          method: "delete",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({
-            "_csrf": token,
+            _csrf: token,
           })
         })
           .then((res) => {
@@ -47,29 +46,26 @@
     </script>
   </head>
   <body>
-    <div class="flex gap-2 items-center w-2/5 justify-start">
-      <h5><%= title %></h5>
-      <p class="bg-gray-300 flex items-center p-2 px-4 rounded-full"><%= data.length %></p>
-    </div>
-    <ul class="list-none pl-4 flex flex-col justify-start w-2/5">
-      <% for(var i=0; i<data.length; i++) {%>
+    <ul class="list-none pl-4">
+      <% for(var i=0; i<tasks.length; i++) {%>
       <li class="Todo-Item flex gap-2 items-center">
         <div
           class="flex items-center w-fit my-2 px-2 py-1 rounded hover:bg-purple-50"
         >
           <input
-            id="todo-checkbox-<%= data[i].id %>"
+            id="todo-checkbox-<%= tasks[i].id %>"
             type="checkbox"
+            <%=tasks[i].completed ? "checked" : "" %>
+            onclick="updateTodo(<%= tasks[i].id %>, <%= tasks[i].completed %>)"
             class="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300"
-            onclick="updateTodo(<%= data[i].id %>, <%= data[i].completed %> )"
           />
           <label
-            for="todo-checkbox-<%= data[i].id %>"
+            for="todo-checkbox-<%= tasks[i].id %>"
             class="ml-2 text-sm text-gray-600 cursor-pointer"
-            ><%= data[i].title %></label
+            ><%= tasks[i].title %></label
           >
         </div>
-        <a class="hidden trash-icon" href="#" onclick="deleteTodo(<%= data[i].id %>)">
+        <a class="hidden trash-icon" href="#!" onclick="deleteTodo(<%= tasks[i].id %>)">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-4 w-4"
