@@ -7,10 +7,27 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <title>TO-DO Manager</title>
     <link rel="stylesheet" href="./css/style.css" />
+<<<<<<< HEAD
     <script>
       var token = document
         .querySelector('meta[name="csrf-token"]')
         .getAttribute("content");
+=======
+  </head>
+  <body class="p-4 bg-gray-400">
+    <div class="flex flex-col justify-center items-center gap-4">
+      <div class="col-start-3 col-span-2"><%- include('header.ejs') %></div>
+      <div class="flex flex-col justify-center">
+        <p class="py-2 text-3xl pb-6">Welcome to TO-DO manager</p>
+        <div class="flex flex-col justify-center items-center">
+          <div class="w-1/2 flex flex-col justify-center">
+            <p>New here?</p>
+            <a
+              href="/signup"
+              class="px-8 bg-grey-100 hover:bg-blue-300 p-2 rounded-lg border-2 border-black flex justify-center"
+              >Sign Up</a
+            >
+>>>>>>> 96f22c1 (Final TODO Manager App)
 
       function updateTodo(id, currentStatus) {
         fetch(`/todos/${id}`, {
